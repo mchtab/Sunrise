@@ -4,10 +4,18 @@ struct ContentView: View {
     @EnvironmentObject var viewModel: SunriseViewModel
     @EnvironmentObject var locationStore: LocationStore
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     @State private var showingLocationManagement = false
     @State private var showingSettings = false
     @State private var appearAnimation = false
+    @State private var showSuccessToast = false
+    @State private var toastMessage = ""
+
+    /// Determines if this is a first-time user (no locations set up)
+    private var isFirstTimeUser: Bool {
+        locationStore.savedLocations.isEmpty
+    }
 
     var body: some View {
         let isTablet = horizontalSizeClass == .regular
@@ -28,44 +36,51 @@ struct ContentView: View {
                     Spacer()
                         .frame(height: isTablet ? 60 : 40)
 
-                    // Main content area
-                    VStack(spacing: isTablet ? 50 : 36) {
-                        // Sun visualization
-                        sunSection
+                    // Main content area - show onboarding or main UI
+                    if isFirstTimeUser {
+                        onboardingSection
                             .opacity(appearAnimation ? 1 : 0)
-                            .scaleEffect(appearAnimation ? 1 : 0.8)
-
-                        // Location indicator
-                        if let locationName = viewModel.currentLocationName {
-                            locationIndicator(name: locationName)
+                            .offset(y: appearAnimation ? 0 : 20)
+                            .frame(maxWidth: maxWidth)
+                    } else {
+                        VStack(spacing: isTablet ? 50 : 36) {
+                            // Sun visualization
+                            sunSection
                                 .opacity(appearAnimation ? 1 : 0)
-                                .offset(y: appearAnimation ? 0 : 20)
+                                .scaleEffect(appearAnimation ? 1 : 0.8)
+
+                            // Location indicator
+                            if let locationName = viewModel.currentLocationName {
+                                locationIndicator(name: locationName)
+                                    .opacity(appearAnimation ? 1 : 0)
+                                    .offset(y: appearAnimation ? 0 : 20)
+                            }
+
+                            // Time cards with loading skeletons
+                            if viewModel.isLoading {
+                                loadingSkeletonSection(isTablet: isTablet)
+                            } else {
+                                timeCardsSection(isTablet: isTablet)
+                                    .opacity(appearAnimation ? 1 : 0)
+                                    .offset(y: appearAnimation ? 0 : 30)
+                            }
+
+                            // Error message with recovery action
+                            if let errorMessage = viewModel.errorMessage {
+                                errorSection(message: errorMessage)
+                            }
                         }
-
-                        // Time cards
-                        if viewModel.isLoading {
-                            loadingSection
-                        } else {
-                            timeCardsSection(isTablet: isTablet)
-                                .opacity(appearAnimation ? 1 : 0)
-                                .offset(y: appearAnimation ? 0 : 30)
-                        }
-
-                        // Error message if any
-                        if let errorMessage = viewModel.errorMessage {
-                            errorSection(message: errorMessage)
-                        }
-                    }
-                    .frame(maxWidth: maxWidth)
-
-                    Spacer()
-                        .frame(height: isTablet ? 60 : 40)
-
-                    // Action buttons
-                    actionSection(isTablet: isTablet)
                         .frame(maxWidth: maxWidth)
-                        .opacity(appearAnimation ? 1 : 0)
-                        .offset(y: appearAnimation ? 0 : 40)
+
+                        Spacer()
+                            .frame(height: isTablet ? 60 : 40)
+
+                        // Action buttons
+                        actionSection(isTablet: isTablet)
+                            .frame(maxWidth: maxWidth)
+                            .opacity(appearAnimation ? 1 : 0)
+                            .offset(y: appearAnimation ? 0 : 40)
+                    }
 
                     Spacer()
                         .frame(height: 40)
@@ -75,6 +90,13 @@ struct ContentView: View {
             }
             .safeAreaInset(edge: .top) { Color.clear.frame(height: 0) }
             .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 0) }
+
+            // Success toast overlay
+            if showSuccessToast {
+                successToast
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(100)
+            }
         }
         .ignoresSafeArea(.all)
         .sheet(isPresented: $showingLocationManagement) {
@@ -89,33 +111,229 @@ struct ContentView: View {
                 viewModel.updateSelectedLocation(selectedLocation)
             }
 
-            withAnimation(.easeOut(duration: 1.2).delay(0.2)) {
+            let animation: Animation = reduceMotion ? .easeOut(duration: 0.3) : .easeOut(duration: 1.2).delay(0.2)
+            withAnimation(animation) {
                 appearAnimation = true
+            }
+        }
+        .onChange(of: viewModel.alarmEnabled) { _, newValue in
+            if newValue {
+                showToast("Alarm set successfully")
             }
         }
     }
 
-    // MARK: - Header Section
+    // MARK: - Toast Helper
+    private func showToast(_ message: String) {
+        HapticFeedback.success.trigger()
+        toastMessage = message
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            showSuccessToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                showSuccessToast = false
+            }
+        }
+    }
+
+    // MARK: - Success Toast View
+    private var successToast: some View {
+        VStack {
+            HStack(spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.white)
+
+                Text(toastMessage)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(
+                Capsule()
+                    .fill(Color.softSage)
+                    .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
+            )
+            .padding(.top, 60)
+
+            Spacer()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Success: \(toastMessage)")
+        .accessibilityAddTraits(.isStaticText)
+    }
+
+    // MARK: - Onboarding Section (First-Time Users)
+    private var onboardingSection: some View {
+        let timePhase = TimePhase.current()
+        let isNightMode = timePhase == .night || timePhase == .dusk
+
+        return VStack(spacing: 32) {
+            // Welcome illustration
+            VStack(spacing: 24) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.sunGold.opacity(0.3),
+                                    Color.dawnRose.opacity(0.2),
+                                    Color.clear
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 80
+                            )
+                        )
+                        .frame(width: 160, height: 160)
+
+                    Image(systemName: "sunrise.fill")
+                        .font(.system(size: 60, weight: .light))
+                        .foregroundColor(.sunGold)
+                        .shadow(color: .sunGold.opacity(0.5), radius: 20)
+                }
+
+                VStack(spacing: 12) {
+                    Text("Wake with the sun")
+                        .dawnDisplayLarge()
+
+                    Text("Start your mornings aligned with\nnature's rhythm")
+                        .font(DawnTypography.subheadline)
+                        .foregroundColor(.adaptiveTextSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                }
+            }
+
+            // Setup steps
+            VStack(spacing: 16) {
+                onboardingStep(
+                    number: 1,
+                    title: "Add your location",
+                    description: "We'll find your local sunrise time",
+                    icon: "mappin.circle.fill",
+                    isComplete: false
+                )
+
+                onboardingStep(
+                    number: 2,
+                    title: "Set your alarm",
+                    description: "Choose before or after sunrise",
+                    icon: "bell.circle.fill",
+                    isComplete: false
+                )
+
+                onboardingStep(
+                    number: 3,
+                    title: "Wake naturally",
+                    description: "Your alarm adjusts with the seasons",
+                    icon: "sun.max.circle.fill",
+                    isComplete: false
+                )
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.adaptiveCardBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.adaptiveCardBorder, lineWidth: isNightMode ? 1 : 0)
+                    )
+                    .shadow(color: Color.adaptiveShadow, radius: 20, x: 0, y: 8)
+            )
+
+            // Get started button
+            Button(action: {
+                HapticFeedback.medium.trigger()
+                showingLocationManagement = true
+            }) {
+                HStack(spacing: 10) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 18))
+                    Text("Get Started")
+                }
+            }
+            .buttonStyle(SoftButtonStyle(isPrimary: true))
+            .accessibilityHint("Opens location setup to begin using the app")
+        }
+        .padding(.vertical, 20)
+    }
+
+    private func onboardingStep(number: Int, title: String, description: String, icon: String, isComplete: Bool) -> some View {
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(Color.adaptiveAccent.opacity(0.15))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.adaptiveAccent)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundColor(.adaptiveText)
+
+                Text(description)
+                    .font(.system(size: 13, weight: .regular, design: .rounded))
+                    .foregroundColor(.adaptiveTextSecondary)
+            }
+
+            Spacer()
+
+            Text("\(number)")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundColor(.adaptiveTextSecondary.opacity(0.5))
+        }
+    }
+
+    // MARK: - Loading Skeleton Section
+    private func loadingSkeletonSection(isTablet: Bool) -> some View {
+        Group {
+            if isTablet {
+                HStack(spacing: 20) {
+                    TimeDisplaySkeleton()
+                }
+            } else {
+                VStack(spacing: 16) {
+                    TimeDisplaySkeleton()
+                }
+            }
+        }
+    }
+
+    // MARK: - Header Section (directly on gradient, not on card)
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 6) {
                 Text(greetingText)
-                    .dawnCaption()
+                    .dawnCaptionOnGradient()
                 Text("Sunrise")
-                    .font(DawnTypography.title)
-                    .foregroundColor(.adaptiveText)
+                    .dawnTitleOnGradient()
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(greetingText). Sunrise alarm app")
 
             Spacer()
 
             HStack(spacing: 12) {
                 CalmIconButton(icon: "mappin.circle") {
+                    HapticFeedback.light.trigger()
                     showingLocationManagement = true
                 }
+                .accessibilityLabel("Manage locations")
+                .accessibilityHint("Opens location management screen")
 
                 CalmIconButton(icon: "slider.horizontal.3") {
+                    HapticFeedback.light.trigger()
                     showingSettings = true
                 }
+                .accessibilityLabel("Settings")
+                .accessibilityHint("Opens alarm timing settings")
             }
         }
         .padding(.top, 16)
@@ -145,13 +363,13 @@ struct ContentView: View {
                     .frame(height: 180)
             }
 
+            // Taglines are directly on gradient
             VStack(spacing: 10) {
                 Text(timePhase == .night ? "Rest peacefully" : "Wake with the sun")
-                    .dawnDisplayLarge()
+                    .dawnDisplayLargeOnGradient()
 
                 Text(timePhase == .night ? "Your sunrise alarm is set" : "Align your rhythm with nature")
-                    .font(DawnTypography.subheadline)
-                    .foregroundColor(.adaptiveTextSecondary)
+                    .dawnSubheadlineOnGradient()
             }
         }
     }
@@ -220,18 +438,9 @@ struct ContentView: View {
         )
     }
 
-    // MARK: - Loading Section (Adaptive)
+    // MARK: - Loading Section (Adaptive) - Deprecated, use loadingSkeletonSection instead
     private var loadingSection: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.2)
-                .tint(.adaptiveAccent)
-
-            Text("Finding your sunrise...")
-                .font(DawnTypography.subheadline)
-                .foregroundColor(.adaptiveTextSecondary)
-        }
-        .padding(.vertical, 40)
+        loadingSkeletonSection(isTablet: false)
     }
 
     // MARK: - Time Cards Section
@@ -276,20 +485,46 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Error Section (Adaptive)
+    // MARK: - Error Section (Adaptive) with Recovery Action
     private func errorSection(message: String) -> some View {
         let timePhase = TimePhase.current()
         let isNightMode = timePhase == .night || timePhase == .dusk
 
-        return HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.circle")
-                .font(.system(size: 18))
-                .foregroundColor(.adaptiveAccent)
+        return VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.adaptiveAccent)
 
-            Text(message)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundColor(.adaptiveText.opacity(0.8))
-                .multilineTextAlignment(.leading)
+                Text(message)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundColor(.adaptiveText.opacity(0.8))
+                    .multilineTextAlignment(.leading)
+
+                Spacer()
+            }
+
+            // Retry button for error recovery
+            Button(action: {
+                HapticFeedback.light.trigger()
+                viewModel.refreshSunriseData()
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Try Again")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                }
+                .foregroundColor(.adaptiveAccent)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(Color.adaptiveAccent.opacity(0.15))
+                )
+            }
+            .accessibilityLabel("Retry loading sunrise data")
+            .accessibilityHint("Attempts to fetch sunrise time again")
         }
         .padding(16)
         .background(
@@ -300,14 +535,18 @@ struct ContentView: View {
                         .stroke(Color.adaptiveAccent.opacity(0.2), lineWidth: 1)
                 )
         )
+        .accessibilityElement(children: .contain)
     }
 
     // MARK: - Action Section
     private func actionSection(isTablet: Bool) -> some View {
         VStack(spacing: 16) {
             if locationStore.savedLocations.isEmpty {
-                // No locations - show add location
-                Button(action: { showingLocationManagement = true }) {
+                // No locations - show add location (shouldn't happen with onboarding)
+                Button(action: {
+                    HapticFeedback.medium.trigger()
+                    showingLocationManagement = true
+                }) {
                     HStack(spacing: 10) {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 18))
@@ -315,19 +554,14 @@ struct ContentView: View {
                     }
                 }
                 .buttonStyle(SoftButtonStyle(isPrimary: true))
-
-                Button(action: { viewModel.requestPermissions() }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "location.circle")
-                            .font(.system(size: 16))
-                        Text("Enable Permissions")
-                    }
-                }
-                .buttonStyle(SoftButtonStyle(isPrimary: false))
+                .accessibilityHint("Opens location setup to add your first location")
 
             } else if !viewModel.alarmEnabled {
                 // Has location, no alarm set
-                Button(action: { viewModel.setupAlarm() }) {
+                Button(action: {
+                    HapticFeedback.medium.trigger()
+                    viewModel.setupAlarm()
+                }) {
                     HStack(spacing: 10) {
                         Image(systemName: "bell.badge")
                             .font(.system(size: 18))
@@ -335,9 +569,14 @@ struct ContentView: View {
                     }
                 }
                 .buttonStyle(SoftButtonStyle(isPrimary: true))
+                .accessibilityLabel("Set sunrise alarm")
+                .accessibilityHint("Schedules an alarm to wake you with the sunrise")
 
                 // Test alarm button
-                Button(action: { viewModel.scheduleTestAlarm(delaySeconds: 10) }) {
+                Button(action: {
+                    HapticFeedback.light.trigger()
+                    viewModel.scheduleTestAlarm(delaySeconds: 10)
+                }) {
                     HStack(spacing: 8) {
                         Image(systemName: "bell.and.waves.left.and.right")
                             .font(.system(size: 16))
@@ -345,12 +584,17 @@ struct ContentView: View {
                     }
                 }
                 .buttonStyle(SoftButtonStyle(isPrimary: false))
+                .accessibilityLabel("Test alarm in 10 seconds")
+                .accessibilityHint("Triggers a test alarm in 10 seconds to preview the alarm sound")
 
             } else {
                 // Alarm is set - show status and cancel option
                 alarmStatusBadge
 
-                Button(action: { viewModel.cancelAlarm() }) {
+                Button(action: {
+                    HapticFeedback.warning.trigger()
+                    viewModel.cancelAlarm()
+                }) {
                     HStack(spacing: 8) {
                         Image(systemName: "bell.slash")
                             .font(.system(size: 16))
@@ -358,6 +602,8 @@ struct ContentView: View {
                     }
                 }
                 .buttonStyle(SoftButtonStyle(isPrimary: false))
+                .accessibilityLabel("Cancel alarm")
+                .accessibilityHint("Removes the scheduled sunrise alarm")
             }
         }
     }
@@ -370,6 +616,19 @@ struct ContentView: View {
         let successColor = isNightMode ?
             Color(red: 0.55, green: 0.70, blue: 0.65) : // Muted teal for night
             Color.softSage
+
+        // Calculate relative time for accessibility
+        let relativeTime: String = {
+            guard let alarmTime = viewModel.alarmTime else { return "" }
+            let interval = alarmTime.timeIntervalSince(Date())
+            let hours = Int(interval / 3600)
+            let minutes = Int((interval.truncatingRemainder(dividingBy: 3600)) / 60)
+            if hours > 0 {
+                return "in \(hours) hours and \(minutes) minutes"
+            } else {
+                return "in \(minutes) minutes"
+            }
+        }()
 
         return HStack(spacing: 10) {
             ZStack {
@@ -393,6 +652,12 @@ struct ContentView: View {
             }
 
             Spacer()
+
+            // Pulsing indicator
+            Circle()
+                .fill(successColor)
+                .frame(width: 8, height: 8)
+                .shadow(color: successColor.opacity(0.5), radius: 4)
         }
         .padding(16)
         .background(
@@ -403,6 +668,9 @@ struct ContentView: View {
                         .stroke(successColor.opacity(0.3), lineWidth: 1)
                 )
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Alarm is active. You'll wake with the sunrise \(relativeTime)")
+        .accessibilityAddTraits(.isStaticText)
     }
 }
 

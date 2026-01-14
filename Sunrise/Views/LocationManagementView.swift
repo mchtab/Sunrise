@@ -130,11 +130,11 @@ struct LocationManagementView: View {
             VStack(spacing: 6) {
                 Text("Your places")
                     .font(.system(size: 20, weight: .medium, design: .serif))
-                    .foregroundColor(.adaptiveText)
+                    .foregroundColor(.adaptiveGradientText)
 
                 Text("Where will you watch the sunrise?")
                     .font(.system(size: 14, weight: .regular, design: .rounded))
-                    .foregroundColor(.adaptiveTextSecondary)
+                    .foregroundColor(.adaptiveGradientTextSecondary)
             }
         }
         .padding(.top, 20)
@@ -420,7 +420,7 @@ struct AddLocationView: View {
 
             Text("Add a new place")
                 .font(.system(size: 18, weight: .medium, design: .serif))
-                .foregroundColor(.adaptiveText)
+                .foregroundColor(.adaptiveGradientText)
         }
         .padding(.top, 10)
     }

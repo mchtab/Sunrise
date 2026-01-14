@@ -6,8 +6,7 @@ import AlarmKit
 
 @MainActor
 class SunriseViewModel: ObservableObject {
-    @Published var sunriseTime: Date?
-    @Published var sunsetTime: Date?
+    @Published var sunTimes: SunTimes?
     @Published var alarmTime: Date?
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -21,6 +20,12 @@ class SunriseViewModel: ObservableObject {
 
     var locationStore: LocationStore?
 
+    /// Convenience accessor for sunrise time (backward compatibility)
+    var sunriseTime: Date? { sunTimes?.sunrise }
+
+    /// Convenience accessor for sunset time
+    var sunsetTime: Date? { sunTimes?.sunset }
+
     init() {
         setupObservers()
         setupAlarmObserver()
@@ -31,7 +36,7 @@ class SunriseViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
                 if let location = location {
-                    self?.fetchSunriseForDisplay(latitude: location.latitude, longitude: location.longitude)
+                    self?.fetchSunTimesForDisplay(latitude: location.latitude, longitude: location.longitude)
                 }
             }.store(in: &cancellables)
     }
@@ -51,7 +56,7 @@ class SunriseViewModel: ObservableObject {
 
     func updateSelectedLocation(_ location: SavedLocation) {
         currentLocationName = location.name
-        fetchSunriseForDisplay(latitude: location.latitude, longitude: location.longitude)
+        fetchSunTimesForDisplay(latitude: location.latitude, longitude: location.longitude)
     }
 
     func requestPermissions() {
@@ -70,38 +75,47 @@ class SunriseViewModel: ObservableObject {
         alarmManager.isAuthorized
     }
 
-    // MARK: - Fetch Sunrise for Display (without scheduling alarm)
+    // MARK: - Fetch Sun Times for Display
 
     func refreshSunriseData() {
         guard let locationStore = locationStore, let selectedLocation = locationStore.selectedLocation else {
             return
         }
-        fetchSunriseForDisplay(latitude: selectedLocation.latitude, longitude: selectedLocation.longitude)
+        fetchSunTimesForDisplay(latitude: selectedLocation.latitude, longitude: selectedLocation.longitude)
     }
 
-    private func fetchSunriseForDisplay(latitude: Double, longitude: Double) {
+    private func fetchSunTimesForDisplay(latitude: Double, longitude: Double) {
         isLoading = true
         errorMessage = nil
 
-        // Always fetch tomorrow's sunrise for display (next upcoming sunrise)
-        sunriseService.fetchTomorrowSunriseTime(latitude: latitude, longitude: longitude) { [weak self] result in
+        // Fetch tomorrow's sun times for display (next upcoming sunrise)
+        sunriseService.fetchSunTimes(latitude: latitude, longitude: longitude) { [weak self] result in
             guard let self = self else { return }
 
             DispatchQueue.main.async {
                 self.isLoading = false
 
                 switch result {
-                case .success(let sunrise):
-                    self.sunriseTime = sunrise
+                case .success(let sunTimes):
+                    self.sunTimes = sunTimes
 
-                    // If alarm is enabled, update the alarm time too
-                    if self.alarmEnabled {
-                        self.updateAlarmTime(for: sunrise)
+                    // If alarm is enabled, update the alarm time based on current timing preference
+                    if self.alarmEnabled, let locationStore = self.locationStore {
+                        self.alarmTime = sunTimes.alarmTime(for: locationStore.alarmTiming)
                     }
 
                 case .failure(let error):
                     self.errorMessage = "Failed to fetch sunrise time: \(error.localizedDescription)"
                 }
+            }
+        }
+    }
+
+    /// Fetch sun times for a specific date (used for rescheduling)
+    private func fetchSunTimesForDate(_ date: Date, latitude: Double, longitude: Double) async throws -> SunTimes {
+        return try await withCheckedThrowingContinuation { continuation in
+            sunriseService.fetchSunTimes(latitude: latitude, longitude: longitude, for: date) { result in
+                continuation.resume(with: result)
             }
         }
     }
@@ -114,17 +128,17 @@ class SunriseViewModel: ObservableObject {
             return
         }
 
-        guard let sunrise = sunriseTime else {
-            // Need to fetch sunrise first
+        guard let sunTimes = sunTimes else {
+            // Need to fetch sun times first
             isLoading = true
-            sunriseService.fetchTomorrowSunriseTime(latitude: selectedLocation.latitude, longitude: selectedLocation.longitude) { [weak self] result in
+            sunriseService.fetchSunTimes(latitude: selectedLocation.latitude, longitude: selectedLocation.longitude) { [weak self] result in
                 guard let self = self else { return }
 
                 Task { @MainActor in
                     switch result {
-                    case .success(let sunrise):
-                        self.sunriseTime = sunrise
-                        await self.scheduleAlarm(for: sunrise)
+                    case .success(let sunTimes):
+                        self.sunTimes = sunTimes
+                        await self.scheduleAlarm(with: sunTimes)
                     case .failure(let error):
                         self.isLoading = false
                         self.errorMessage = "Failed to fetch sunrise time: \(error.localizedDescription)"
@@ -135,26 +149,21 @@ class SunriseViewModel: ObservableObject {
         }
 
         Task {
-            await scheduleAlarm(for: sunrise)
+            await scheduleAlarm(with: sunTimes)
         }
     }
 
-    private func scheduleAlarm(for sunrise: Date) async {
+    private func scheduleAlarm(with sunTimes: SunTimes) async {
         guard let locationStore = locationStore, let selectedLocation = locationStore.selectedLocation else {
             isLoading = false
             errorMessage = "Location store not initialized"
             return
         }
 
-        let minuteOffset = locationStore.alarmTiming == .before ? -10 : 10
-        guard let alarmDate = Calendar.current.date(byAdding: .minute, value: minuteOffset, to: sunrise) else {
-            isLoading = false
-            errorMessage = "Failed to calculate alarm time"
-            return
-        }
-
+        let alarmDate = sunTimes.alarmTime(for: locationStore.alarmTiming)
         self.alarmTime = alarmDate
-        let isBefore = locationStore.alarmTiming == .before
+
+        let isBefore = locationStore.alarmTiming != .afterSunrise
         let locationName = selectedLocation.name
 
         do {
@@ -177,12 +186,22 @@ class SunriseViewModel: ObservableObject {
         }
     }
 
-    private func updateAlarmTime(for sunrise: Date) {
-        guard let locationStore = locationStore else { return }
+    /// Reschedule alarm for the next day (called after alarm fires if repeating is enabled)
+    func rescheduleForNextDay() async {
+        guard let locationStore = locationStore,
+              let selectedLocation = locationStore.selectedLocation,
+              locationStore.alarmRepeats else {
+            return
+        }
 
-        let minuteOffset = locationStore.alarmTiming == .before ? -10 : 10
-        if let alarmDate = Calendar.current.date(byAdding: .minute, value: minuteOffset, to: sunrise) {
-            self.alarmTime = alarmDate
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+
+        do {
+            let sunTimes = try await fetchSunTimesForDate(tomorrow, latitude: selectedLocation.latitude, longitude: selectedLocation.longitude)
+            self.sunTimes = sunTimes
+            await scheduleAlarm(with: sunTimes)
+        } catch {
+            errorMessage = "Failed to reschedule alarm: \(error.localizedDescription)"
         }
     }
 

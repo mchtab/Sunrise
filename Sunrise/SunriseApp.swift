@@ -68,18 +68,17 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             return
         }
 
-        // Fetch tomorrow's sunrise and reschedule alarm using AlarmKit
-        sunriseService.fetchTomorrowSunriseTime(latitude: selectedLocation.latitude, longitude: selectedLocation.longitude) { result in
+        // Fetch tomorrow's sun times and reschedule alarm using AlarmKit
+        sunriseService.fetchSunTimes(latitude: selectedLocation.latitude, longitude: selectedLocation.longitude) { result in
             Task { @MainActor in
                 switch result {
-                case .success(let sunriseDate):
-                    let minuteOffset = locationStore.alarmTiming == .before ? -10 : 10
-                    let alarmDate = Calendar.current.date(byAdding: .minute, value: minuteOffset, to: sunriseDate)!
+                case .success(let sunTimes):
+                    let alarmDate = sunTimes.alarmTime(for: locationStore.alarmTiming)
                     let alarmManager = AlarmKitManager()
                     do {
                         _ = try await alarmManager.scheduleAlarm(
                             at: alarmDate,
-                            isBefore: locationStore.alarmTiming == .before,
+                            isBefore: locationStore.alarmTiming != .afterSunrise,
                             locationName: selectedLocation.name
                         )
                         task.setTaskCompleted(success: true)

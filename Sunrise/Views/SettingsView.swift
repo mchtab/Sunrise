@@ -30,6 +30,10 @@ struct SettingsView: View {
                                 .opacity(appearAnimation ? 1 : 0)
                                 .offset(y: appearAnimation ? 0 : 20)
 
+                            repeatAlarmCard
+                                .opacity(appearAnimation ? 1 : 0)
+                                .offset(y: appearAnimation ? 0 : 25)
+
                             aboutCard
                                 .opacity(appearAnimation ? 1 : 0)
                                 .offset(y: appearAnimation ? 0 : 30)
@@ -108,11 +112,11 @@ struct SettingsView: View {
 
                 Image(systemName: "slider.horizontal.3")
                     .font(.system(size: 36, weight: .light))
-                    .foregroundColor(.adaptiveAccent)
+                    .foregroundColor(.adaptiveGradientAccent)
             }
 
             Text("Customize your wake")
-                .dawnDisplayMedium()
+                .dawnDisplayMediumOnGradient()
         }
         .padding(.top, 20)
     }
@@ -144,28 +148,21 @@ struct SettingsView: View {
                 Spacer()
             }
 
-            // Custom segmented picker
-            HStack(spacing: 0) {
-                ForEach(AlarmTiming.allCases, id: \.self) { timing in
+            // Timing options as a vertical list
+            VStack(spacing: 8) {
+                ForEach(AlarmTiming.allCases) { timing in
                     timingOption(timing)
                 }
             }
-            .padding(4)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isNightMode ? Color.white.opacity(0.1) : Color.dawnPeach.opacity(0.3))
-            )
 
-            // Description
+            // Description of selected timing
             HStack(spacing: 10) {
-                Image(systemName: locationStore.alarmTiming == .before ? "sunrise" : "sun.max")
+                Image(systemName: locationStore.alarmTiming.icon)
                     .font(.system(size: 16))
                     .foregroundColor(.adaptiveAccent)
                     .frame(width: 24)
 
-                Text(locationStore.alarmTiming == .before ?
-                     "Your alarm will ring 10 minutes before sunrise, giving you time to prepare for the day ahead." :
-                     "Your alarm will ring 10 minutes after sunrise, letting you wake naturally with the light.")
+                Text(locationStore.alarmTiming.description)
                     .dawnBody()
                     .lineSpacing(5)
             }
@@ -192,26 +189,139 @@ struct SettingsView: View {
         let isNightMode = timePhase == .night || timePhase == .dusk
 
         return Button(action: {
+            HapticFeedback.selection.trigger()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 locationStore.updateAlarmTiming(timing)
             }
         }) {
-            VStack(spacing: 6) {
-                Image(systemName: timing == .before ? "sunrise" : "sun.max")
-                    .font(.system(size: 18, weight: .medium))
+            HStack(spacing: 14) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(isSelected ? Color.adaptiveAccent : Color.adaptiveAccent.opacity(0.15))
+                        .frame(width: 36, height: 36)
 
-                Text(timing == .before ? "Before" : "After")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    Image(systemName: timing.icon)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(isSelected ? .white : .adaptiveAccent)
+                }
+
+                // Label and approximate time
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(timing.rawValue)
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(.adaptiveText)
+
+                    Text(timingSubtitle(for: timing))
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundColor(.adaptiveTextSecondary)
+                }
+
+                Spacer()
+
+                // Checkmark for selected
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.adaptiveAccent)
+                }
             }
-            .foregroundColor(isSelected ? .white : Color.adaptiveText.opacity(0.6))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isSelected ? Color.adaptiveAccent : Color.clear)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(isSelected ?
+                          (isNightMode ? Color.white.opacity(0.12) : Color.adaptiveAccent.opacity(0.1)) :
+                          Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(isSelected ? Color.adaptiveAccent.opacity(0.3) : Color.clear, lineWidth: 1)
+                    )
             )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(timing.rawValue), \(timing.description)")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+    }
+
+    /// Generate subtitle showing approximate time relative to sunrise
+    private func timingSubtitle(for timing: AlarmTiming) -> String {
+        let minutes = timing.approximateMinutesBefore
+        if minutes > 0 {
+            return "~\(minutes) min before sunrise"
+        } else if minutes < 0 {
+            return "~\(abs(minutes)) min after sunrise"
+        } else {
+            return "At sunrise"
+        }
+    }
+
+    // MARK: - Repeat Alarm Card (Adaptive)
+    private var repeatAlarmCard: some View {
+        let isNightMode = timePhase == .night || timePhase == .dusk
+        let repeatColor = isNightMode ?
+            Color(red: 0.55, green: 0.65, blue: 0.75) : // Muted blue for night
+            Color.mistBlue
+
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(repeatColor.opacity(0.2))
+                        .frame(width: 40, height: 40)
+
+                    Image(systemName: "repeat")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(repeatColor)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily Alarm")
+                        .dawnHeadline()
+
+                    Text("Auto-schedule for tomorrow")
+                        .dawnCaption()
+                }
+
+                Spacer()
+
+                Toggle("", isOn: Binding(
+                    get: { locationStore.alarmRepeats },
+                    set: { locationStore.updateAlarmRepeats($0) }
+                ))
+                .tint(repeatColor)
+                .labelsHidden()
+            }
+
+            if locationStore.alarmRepeats {
+                HStack(spacing: 10) {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 14))
+                        .foregroundColor(repeatColor.opacity(0.8))
+
+                    Text("After your alarm fires, we'll automatically schedule the next day's sunrise alarm.")
+                        .font(.system(size: 13, weight: .regular, design: .rounded))
+                        .foregroundColor(.adaptiveTextSecondary)
+                        .lineSpacing(4)
+                }
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isNightMode ? Color.white.opacity(0.06) : repeatColor.opacity(0.08))
+                )
+            }
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.adaptiveCardBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.adaptiveCardBorder, lineWidth: isNightMode ? 1 : 0)
+                )
+                .shadow(color: Color.adaptiveShadow, radius: 20, x: 0, y: 8)
+        )
+        .animation(.easeInOut(duration: 0.2), value: locationStore.alarmRepeats)
     }
 
     // MARK: - About Card (Adaptive)
