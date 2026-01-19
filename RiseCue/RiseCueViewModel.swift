@@ -5,7 +5,7 @@ import Combine
 import AlarmKit
 
 @MainActor
-class SunriseViewModel: ObservableObject {
+class RiseCueViewModel: ObservableObject {
     @Published var sunTimes: SunTimes?
     @Published var alarmTime: Date?
     @Published var isLoading = false

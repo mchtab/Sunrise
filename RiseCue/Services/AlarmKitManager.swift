@@ -82,7 +82,7 @@ class AlarmKitManager: ObservableObject {
         let alertContent = AlarmPresentation.Alert(title: alertTitle, stopButton: .stopButton)
 
         // Create alarm attributes with metadata
-        let metadata = SunriseAlarmData(isBefore: isBefore, locationName: locationName)
+        let metadata = RiseCueAlarmData(isBefore: isBefore, locationName: locationName)
         let attributes = AlarmAttributes(
             presentation: AlarmPresentation(alert: alertContent),
             metadata: metadata,

@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4CB151212F16A69600A6698B /* SunriseAlarmData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB151202F16A69600A6698B /* SunriseAlarmData.swift */; };
+		4CB151212F16A69600A6698B /* RiseCueAlarmData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB151202F16A69600A6698B /* RiseCueAlarmData.swift */; };
 		4CB151242F16A6B800A6698B /* AlarmKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB151232F16A6B800A6698B /* AlarmKitManager.swift */; };
-		AA0001 /* SunriseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000 /* SunriseApp.swift */; };
+		AA0001 /* RiseCueApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000 /* RiseCueApp.swift */; };
 		AA0003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002 /* ContentView.swift */; };
 		AA0005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0004 /* Assets.xcassets */; };
 		AA0007 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0006 /* Preview Assets.xcassets */; };
 		AA0009 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0008 /* LocationManager.swift */; };
 		AA000B /* SunriseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000A /* SunriseService.swift */; };
-		AA000F /* SunriseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000E /* SunriseViewModel.swift */; };
+		AA000F /* RiseCueViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000E /* RiseCueViewModel.swift */; };
 		AA0011 /* SavedLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010 /* SavedLocation.swift */; };
 		AA0013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0012 /* SettingsView.swift */; };
 		AA0015 /* LocationManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0014 /* LocationManagementView.swift */; };
@@ -23,20 +23,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4CB151202F16A69600A6698B /* SunriseAlarmData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunriseAlarmData.swift; sourceTree = "<group>"; };
+		4CB151202F16A69600A6698B /* RiseCueAlarmData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiseCueAlarmData.swift; sourceTree = "<group>"; };
 		4CB151232F16A6B800A6698B /* AlarmKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmKitManager.swift; sourceTree = "<group>"; };
-		AA0000 /* SunriseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunriseApp.swift; sourceTree = "<group>"; };
+		AA0000 /* RiseCueApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiseCueApp.swift; sourceTree = "<group>"; };
 		AA0002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AA0004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0006 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AA0008 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		AA000A /* SunriseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunriseService.swift; sourceTree = "<group>"; };
-		AA000E /* SunriseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunriseViewModel.swift; sourceTree = "<group>"; };
+		AA000E /* RiseCueViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiseCueViewModel.swift; sourceTree = "<group>"; };
 		AA0010 /* SavedLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedLocation.swift; sourceTree = "<group>"; };
 		AA0012 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA0014 /* LocationManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagementView.swift; sourceTree = "<group>"; };
 		AA0018 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		AAFFFD /* Sunrise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sunrise.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAFFFD /* RiseCue.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RiseCue.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAFFFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -54,7 +54,7 @@
 		AA0016 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				4CB151202F16A69600A6698B /* SunriseAlarmData.swift */,
+				4CB151202F16A69600A6698B /* RiseCueAlarmData.swift */,
 				AA0010 /* SavedLocation.swift */,
 			);
 			path = Models;
@@ -72,18 +72,18 @@
 		AAFFF4 = {
 			isa = PBXGroup;
 			children = (
-				AAFFF9 /* Sunrise */,
+				AAFFF9 /* RiseCue */,
 				AAFFFB /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		AAFFF9 /* Sunrise */ = {
+		AAFFF9 /* RiseCue */ = {
 			isa = PBXGroup;
 			children = (
 				AAFFFE /* Info.plist */,
-				AA0000 /* SunriseApp.swift */,
+				AA0000 /* RiseCueApp.swift */,
 				AA0002 /* ContentView.swift */,
-				AA000E /* SunriseViewModel.swift */,
+				AA000E /* RiseCueViewModel.swift */,
 				AA0018 /* Theme.swift */,
 				AA0016 /* Models */,
 				AA0017 /* Views */,
@@ -91,13 +91,13 @@
 				AA0004 /* Assets.xcassets */,
 				AAFFFC /* Preview Content */,
 			);
-			path = Sunrise;
+			path = RiseCue;
 			sourceTree = "<group>";
 		};
 		AAFFFB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AAFFFD /* Sunrise.app */,
+				AAFFFD /* RiseCue.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,9 +123,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AA0020 /* Sunrise */ = {
+		AA0020 /* RiseCue */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AAFFF7 /* Build configuration list for PBXNativeTarget "Sunrise" */;
+			buildConfigurationList = AAFFF7 /* Build configuration list for PBXNativeTarget "RiseCue" */;
 			buildPhases = (
 				AAFFF8 /* Sources */,
 				AAFFFA /* Frameworks */,
@@ -135,9 +135,9 @@
 			);
 			dependencies = (
 			);
-			name = Sunrise;
-			productName = Sunrise;
-			productReference = AAFFFD /* Sunrise.app */;
+			name = RiseCue;
+			productName = RiseCue;
+			productReference = AAFFFD /* RiseCue.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -155,7 +155,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AAFFF6 /* Build configuration list for PBXProject "Sunrise" */;
+			buildConfigurationList = AAFFF6 /* Build configuration list for PBXProject "RiseCue" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -168,7 +168,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AA0020 /* Sunrise */,
+				AA0020 /* RiseCue */,
 			);
 		};
 /* End PBXProject section */
@@ -191,13 +191,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0003 /* ContentView.swift in Sources */,
-				AA0001 /* SunriseApp.swift in Sources */,
+				AA0001 /* RiseCueApp.swift in Sources */,
 				AA0019 /* Theme.swift in Sources */,
-				4CB151212F16A69600A6698B /* SunriseAlarmData.swift in Sources */,
+				4CB151212F16A69600A6698B /* RiseCueAlarmData.swift in Sources */,
 				4CB151242F16A6B800A6698B /* AlarmKitManager.swift in Sources */,
 				AA0009 /* LocationManager.swift in Sources */,
 				AA000B /* SunriseService.swift in Sources */,
-				AA000F /* SunriseViewModel.swift in Sources */,
+				AA000F /* RiseCueViewModel.swift in Sources */,
 				AA0011 /* SavedLocation.swift in Sources */,
 				AA0013 /* SettingsView.swift in Sources */,
 				AA0015 /* LocationManagementView.swift in Sources */,
@@ -333,11 +333,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Sunrise/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"RiseCue/Preview Content\"";
 				DEVELOPMENT_TEAM = UY27YB5ZKJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Sunrise/Info.plist;
+				INFOPLIST_FILE = RiseCue/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RiseCue;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine sunrise time for your area";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -366,11 +366,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Sunrise/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"RiseCue/Preview Content\"";
 				DEVELOPMENT_TEAM = UY27YB5ZKJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Sunrise/Info.plist;
+				INFOPLIST_FILE = RiseCue/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RiseCue;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine sunrise time for your area";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -395,7 +395,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AAFFF6 /* Build configuration list for PBXProject "Sunrise" */ = {
+		AAFFF6 /* Build configuration list for PBXProject "RiseCue" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AAFFF0 /* Debug */,
@@ -404,7 +404,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AAFFF7 /* Build configuration list for PBXNativeTarget "Sunrise" */ = {
+		AAFFF7 /* Build configuration list for PBXNativeTarget "RiseCue" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AAFFF2 /* Debug */,

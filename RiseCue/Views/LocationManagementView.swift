@@ -3,7 +3,7 @@ import CoreLocation
 
 struct LocationManagementView: View {
     @EnvironmentObject var locationStore: LocationStore
-    @EnvironmentObject var viewModel: SunriseViewModel
+    @EnvironmentObject var viewModel: RiseCueViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
@@ -298,7 +298,7 @@ struct LocationCard: View {
 // MARK: - Add Location View (Adaptive)
 struct AddLocationView: View {
     @EnvironmentObject var locationStore: LocationStore
-    @EnvironmentObject var viewModel: SunriseViewModel
+    @EnvironmentObject var viewModel: RiseCueViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
@@ -717,6 +717,6 @@ struct LocationManagementView_Previews: PreviewProvider {
     static var previews: some View {
         LocationManagementView()
             .environmentObject(LocationStore())
-            .environmentObject(SunriseViewModel())
+            .environmentObject(RiseCueViewModel())
     }
 }

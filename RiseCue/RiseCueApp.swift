@@ -3,14 +3,14 @@ import AlarmKit
 import BackgroundTasks
 
 @main
-struct SunriseApp: App {
+struct RiseCueApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var locationStore = LocationStore()
-    @StateObject private var viewModel = SunriseViewModel()
+    @StateObject private var viewModel = RiseCueViewModel()
 
     init() {
         let locationStore = LocationStore()
-        let viewModel = SunriseViewModel()
+        let viewModel = RiseCueViewModel()
         viewModel.locationStore = locationStore
         _locationStore = StateObject(wrappedValue: locationStore)
         _viewModel = StateObject(wrappedValue: viewModel)

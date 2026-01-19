@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var viewModel: SunriseViewModel
+    @EnvironmentObject var viewModel: RiseCueViewModel
     @EnvironmentObject var locationStore: LocationStore
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) var reduceMotion
@@ -681,7 +681,7 @@ struct ContentView: View {
 // MARK: - Preview
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        let viewModel = SunriseViewModel()
+        let viewModel = RiseCueViewModel()
         let locationStore = LocationStore()
         viewModel.locationStore = locationStore
 
