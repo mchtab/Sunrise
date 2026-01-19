@@ -24,7 +24,7 @@ class AlarmKitManager: ObservableObject {
     private var alarmID: UUID?
 
     // Persistent storage key for alarm ID
-    private let alarmIDKey = "com.sunrise.currentAlarmID"
+    private let alarmIDKey = "com.archerfish.risecue.currentAlarmID"
 
     init() {
         // Restore alarm ID from storage

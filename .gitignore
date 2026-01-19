@@ -25,3 +25,11 @@ Pods/
 # IDE
 .idea/
 *.hmap
+
+# AI/Development tools
+.claude/
+.memoryhub
+CLAUDE.md
+
+# Misc
+alarms/

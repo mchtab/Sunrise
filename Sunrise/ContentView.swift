@@ -101,9 +101,12 @@ struct ContentView: View {
         .ignoresSafeArea(.all)
         .sheet(isPresented: $showingLocationManagement) {
             LocationManagementView()
+                .environmentObject(locationStore)
+                .environmentObject(viewModel)
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+                .environmentObject(locationStore)
         }
         .onAppear {
             viewModel.requestPermissions()
@@ -312,11 +315,11 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(greetingText)
                     .dawnCaptionOnGradient()
-                Text("Sunrise")
+                Text("RiseCue")
                     .dawnTitleOnGradient()
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(greetingText). Sunrise alarm app")
+            .accessibilityLabel("\(greetingText). RiseCue alarm app")
 
             Spacer()
 
@@ -516,13 +519,14 @@ struct ContentView: View {
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                 }
                 .foregroundColor(.adaptiveAccent)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
                 .background(
                     Capsule()
                         .fill(Color.adaptiveAccent.opacity(0.15))
                 )
             }
+            .frame(minHeight: 44)
             .accessibilityLabel("Retry loading sunrise data")
             .accessibilityHint("Attempts to fetch sunrise time again")
         }
@@ -565,7 +569,7 @@ struct ContentView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "bell.badge")
                             .font(.system(size: 18))
-                        Text("Set Sunrise Alarm")
+                        Text("Set Alarm")
                     }
                 }
                 .buttonStyle(SoftButtonStyle(isPrimary: true))

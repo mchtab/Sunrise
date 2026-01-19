@@ -23,10 +23,10 @@
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>com.sunrise.app.refresh</string>
+		<string>com.archerfish.risecue.refresh</string>
 	</array>
 	<key>NSAlarmKitUsageDescription</key>
-	<string>Sunrise uses alarms to wake you at sunrise each morning with a gentle, calming alert.</string>
+	<string>RiseCue uses alarms to wake you at sunrise each morning with a gentle, calming alert.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UILaunchScreen</key>

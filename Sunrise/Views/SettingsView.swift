@@ -199,10 +199,10 @@ struct SettingsView: View {
                 ZStack {
                     Circle()
                         .fill(isSelected ? Color.adaptiveAccent : Color.adaptiveAccent.opacity(0.15))
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
 
                     Image(systemName: timing.icon)
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundColor(isSelected ? .white : .adaptiveAccent)
                 }
 
@@ -222,12 +222,14 @@ struct SettingsView: View {
                 // Checkmark for selected
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
+                        .font(.system(size: 22))
                         .foregroundColor(.adaptiveAccent)
+                        .frame(width: 44, height: 44)
                 }
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
+            .frame(minHeight: 64)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ?
@@ -346,7 +348,7 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("About Sunrise")
+                    Text("About RiseCue")
                         .dawnHeadline()
 
                     Text("Wake naturally, live fully")
@@ -356,7 +358,7 @@ struct SettingsView: View {
                 Spacer()
             }
 
-            Text("Sunrise helps you align your sleep cycle with natural light patterns. Waking with the sun has been shown to improve mood, energy levels, and overall well-being.")
+            Text("RiseCue helps you align your sleep cycle with natural light patterns. Waking with the sun has been shown to improve mood, energy levels, and overall well-being.")
                 .dawnBody()
                 .lineSpacing(6)
 
@@ -364,7 +366,7 @@ struct SettingsView: View {
             Link(destination: URL(string: "https://sunrise-sunset.org")!) {
                 HStack(spacing: 8) {
                     Image(systemName: "sun.horizon")
-                        .font(.system(size: 12))
+                        .font(.system(size: 14))
                         .foregroundColor(natureColor)
 
                     Text("Sun times by sunrise-sunset.org")
@@ -375,6 +377,7 @@ struct SettingsView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(natureColor.opacity(0.6))
                 }
+                .frame(minHeight: 44)
             }
 
             HStack(spacing: 8) {

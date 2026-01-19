@@ -63,13 +63,18 @@ struct LocationManagementView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddLocation = true }) {
                         Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 22))
+                            .font(.system(size: 24))
                             .foregroundColor(.adaptiveAccent)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Add location")
                 }
             }
             .sheet(isPresented: $showingAddLocation) {
                 AddLocationView()
+                    .environmentObject(locationStore)
+                    .environmentObject(viewModel)
             }
         }
         .onAppear {
@@ -250,15 +255,17 @@ struct LocationCard: View {
                 } else {
                     Button(action: { showingDeleteConfirmation = true }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 16))
+                            .font(.system(size: 18))
                             .foregroundColor(.adaptiveTextSecondary.opacity(0.6))
-                            .frame(width: 36, height: 36)
+                            .frame(width: 44, height: 44)
                             .background(
                                 Circle()
                                     .fill(isNightMode ? Color.white.opacity(0.08) : Color.dawnRose.opacity(0.1))
                             )
+                            .contentShape(Circle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Delete \(location.name)")
                 }
             }
             .padding(16)

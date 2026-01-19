@@ -48,7 +48,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func registerBackgroundTasks() {
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.sunrise.app.refresh", using: nil) { task in
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.archerfish.risecue.refresh", using: nil) { task in
             self.handleAppRefresh(task: task as! BGAppRefreshTask)
         }
     }
@@ -94,7 +94,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func scheduleAppRefresh() {
-        let request = BGAppRefreshTaskRequest(identifier: "com.sunrise.app.refresh")
+        let request = BGAppRefreshTaskRequest(identifier: "com.archerfish.risecue.refresh")
         request.earliestBeginDate = Calendar.current.date(byAdding: .hour, value: 12, to: Date())
 
         do {
